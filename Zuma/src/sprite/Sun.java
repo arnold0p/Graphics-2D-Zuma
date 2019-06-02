@@ -5,6 +5,7 @@
  */
 package sprite;
 
+import javafx.animation.Interpolator;
 import javafx.animation.ScaleTransition;
 import javafx.animation.Timeline;
 import javafx.animation.TranslateTransition;
@@ -29,8 +30,16 @@ public class Sun extends Sprite implements EventHandler<MouseEvent> {
     private Circle mouth,mouthBack;
     private Color mouthColor, mounthColorBack;
     private int i=0;
+    private long lastMoved = 0;
+    private ScaleTransition closingEyes;
+    private TranslateTransition closingEyestr;
+    private Group eyes = new Group();
+    private Group closedEyes = new Group();
+    private double x,y;
     
     public Sun(double x, double y) {
+        this.x = x;
+        this.y = y;
         body = new Circle(SUN_RADIUS);
         body.setFill(Color.GOLD);
         
@@ -52,31 +61,31 @@ public class Sun extends Sprite implements EventHandler<MouseEvent> {
         mouthBack.setStroke(mounthColorBack);
         
         
-        Arc left_eye = new Arc(-SUN_RADIUS/3.3 + 3,-SUN_RADIUS/2 -5,10,25,180,180);
-        Arc right_eye = new Arc(SUN_RADIUS/3.3 - 3,-SUN_RADIUS/2 -5,10,25,180,180);
+        Arc leftEye = new Arc(-SUN_RADIUS/3.3 + 3,-SUN_RADIUS/2 -5,10,25,180,180);
+        Arc rightEye = new Arc(SUN_RADIUS/3.3 - 3,-SUN_RADIUS/2 -5,10,25,180,180);
       
         Circle left = new Circle(-SUN_RADIUS/3.3 + 3,-SUN_RADIUS/2 + 15,5);
         Circle right = new Circle(SUN_RADIUS/3.3 - 3,-SUN_RADIUS/2 + 15,5);
         
-        left_eye.setStroke(Color.BLACK);
-        left_eye.setFill(Color.WHITE);
-        left_eye.setType(ArcType.CHORD);
-        left_eye.setRotate(180);
+        leftEye.setStroke(Color.BLACK);
+        leftEye.setFill(Color.WHITE);
+        leftEye.setType(ArcType.CHORD);
+        leftEye.setRotate(180);
         
-        right_eye.setStroke(Color.BLACK);
-        right_eye.setFill(Color.WHITE);
-        right_eye.setType(ArcType.CHORD);
-        right_eye.setRotate(180);
+        rightEye.setStroke(Color.BLACK);
+        rightEye.setFill(Color.WHITE);
+        rightEye.setType(ArcType.CHORD);
+        rightEye.setRotate(180);
         
-        Rectangle left_o = new Rectangle( -SUN_RADIUS/2 - 5 - 2, -7,15 , 10);
-        left_o.setFill(Color.ORANGE);
-        left_o.setArcHeight(5);
-        left_o.setArcWidth(5);
+        Rectangle lefto = new Rectangle( -SUN_RADIUS/2 - 5 - 2, -7,15 , 10);
+        lefto.setFill(Color.ORANGE);
+        lefto.setArcHeight(5);
+        lefto.setArcWidth(5);
         
-        Rectangle right_o = new Rectangle(SUN_RADIUS/2 - 5, -7, 15 , 10 );
-        right_o.setFill(Color.ORANGE);
-        right_o.setArcHeight(5);
-        right_o.setArcWidth(5);
+        Rectangle righto = new Rectangle(SUN_RADIUS/2 - 5, -7, 15 , 10 );
+        righto.setFill(Color.ORANGE);
+        righto.setArcHeight(5);
+        righto.setArcWidth(5);
         
         
         
@@ -88,22 +97,33 @@ public class Sun extends Sprite implements EventHandler<MouseEvent> {
         rec2.setRotate(45);
         
         Group recs = new Group();
-        
         recs.getChildren().addAll(rec1,rec2);
         
-        Duration t = Duration.seconds(1);
-        ScaleTransition st1 = new ScaleTransition(t,recs);
-        st1.setFromX(1);
-        st1.setToX(1.1);
-        st1.setFromY(1);
-        st1.setToY(1.1);
-        st1.setAutoReverse(true);
-        st1.setCycleCount(Timeline.INDEFINITE);
-        st1.play();
+        eyes.getChildren().addAll(leftEye,rightEye,left,right);
         
-        getChildren().addAll(recs,body, mouthBack, mouth, left_eye,right_eye,left,right,right_o,left_o);
+        Duration t = Duration.seconds(1);
+        ScaleTransition st = new ScaleTransition(t,recs);
+        st.setFromX(1);
+        st.setToX(1.1);
+        st.setFromY(1);
+        st.setToY(1.1);
+        st.setAutoReverse(true);
+        st.setCycleCount(Timeline.INDEFINITE);
+        st.play();
+        
+        getChildren().addAll(recs,body, mouthBack, mouth, eyes,lefto,righto);
         setTranslateX(x);
         setTranslateY(y);
+        
+        
+        Line lineLeft = new Line(-SUN_RADIUS/3.3 + 3 -10,-SUN_RADIUS/2 + 20,-SUN_RADIUS/3.3 + 3 +10,-SUN_RADIUS/2 + 20);
+        lineLeft.setFill(Color.BLACK);
+        lineLeft.setStroke(Color.BLACK);
+        Line lineRight = new Line(SUN_RADIUS/3.3 - 3 - 10,-SUN_RADIUS/2 + 20,SUN_RADIUS/3.3 - 3 + 10,-SUN_RADIUS/2 + 20);
+        lineRight.setFill(Color.BLACK);
+        lineRight.setStroke(Color.BLACK);
+        closedEyes.getChildren().addAll(lineLeft,lineRight);
+        getChildren().addAll(closedEyes);
     }
 
     public void setRandomMouthColor() {
@@ -120,7 +140,18 @@ public class Sun extends Sprite implements EventHandler<MouseEvent> {
 
     @Override
     public void update() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        if (System.currentTimeMillis()-lastMoved>10000 && closingEyes==null){
+            closingEyes = new ScaleTransition(Duration.seconds(4), eyes);
+            closingEyes.setFromY(1);
+            closingEyes.setToY(0);
+            closingEyes.setInterpolator(Interpolator.LINEAR);
+            closingEyes.play();
+            closingEyestr = new TranslateTransition(Duration.seconds(4), eyes);
+            closingEyestr.setFromY(0);
+            closingEyestr.setToY(12.5);
+            closingEyestr.setInterpolator(Interpolator.LINEAR);
+            closingEyestr.play();
+        }
     }
 
     @Override
@@ -132,6 +163,28 @@ public class Sun extends Sprite implements EventHandler<MouseEvent> {
             alpha -= 180;
         }
         setRotate(alpha);
+        lastMoved = System.currentTimeMillis();
+        if (closingEyes!=null){
+            closingEyes.stop();
+            closingEyestr.stop();
+            eyes.setScaleY(1);
+            eyes.setTranslateY(0);
+            closingEyes = null;
+            closingEyestr = null;
+        }
+        
     }
 
+    public ScaleTransition getClosingEyes() {
+        return closingEyes;
+    }
+
+    public double getX() {
+        return x;
+    }
+
+    public double getY() {
+        return y;
+    }
+    
 }

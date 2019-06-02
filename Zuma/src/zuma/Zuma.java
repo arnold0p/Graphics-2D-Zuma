@@ -16,6 +16,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.CycleMethod;
 import javafx.scene.paint.RadialGradient;
 import javafx.scene.paint.Stop;
+import javafx.scene.shape.Circle;
 import javafx.scene.shape.Polygon;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
@@ -38,15 +39,20 @@ public class Zuma extends Application {
     private Scene scene;
     private long t = 0;
     private int sec = 0;
-    private Text text;
+    private Text time;
     private static boolean end = false;
     private static int balls_cnt = 0;
     private Polygon z = null;
+    private int points = 0;
+    private Text score;
+    private Background background;
+    private ArrayList<Circle> coins = new ArrayList<>();
+    private Text coinText;
     
     @Override
     public void start(Stage primaryStage) {
         root = new Group();
-        Background background = new Background(WINDOW_WIDTH, WINDOW_HEIGHT);
+        background = new Background(WINDOW_WIDTH, WINDOW_HEIGHT);
         sun = new Sun(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2);
         moon = new Moon((3.0 / 4) * WINDOW_WIDTH, WINDOW_HEIGHT / 2);
         balls.add(new Ball());
@@ -69,11 +75,22 @@ public class Zuma extends Application {
             }
         };
         timer.start();
+        
+        score = new Text("Score: " + points);
+        score.setFill(Color.WHITE);
+        score.setX(WINDOW_WIDTH-WINDOW_WIDTH/10);
+        score.setY(20);
+        root.getChildren().add(score);
+        
+        time = new Text();
+        time.setText("Time: " + sec);
+        time.setFill(Color.WHITE);
+        time.setX(WINDOW_WIDTH/2);
+        time.setY(20);
+        root.getChildren().add(time);
     }
 
-    public Polygon makeZ(){
-        double x = moon.getX();
-        double y = moon.getY();
+    public Polygon makeZ(double x,double y){
         double top = y - 15;
         double bottom = y + 15;
         double left = x - 10;
@@ -108,8 +125,7 @@ public class Zuma extends Application {
             return;
         }
         //adding time
-        root.getChildren().remove(text);
-        text = new Text();
+        
         if (t==0){
             t = System.currentTimeMillis();
         }
@@ -120,7 +136,7 @@ public class Zuma extends Application {
                 
                 // make Z
                 if (Math.random()*100 > 75){
-                    z = makeZ();
+                    z = makeZ(moon.getX(),moon.getY());
                   
                     RotateTransition rt = new RotateTransition(Duration.seconds(1), z);
                     double angle = Math.random()*80;
@@ -137,16 +153,84 @@ public class Zuma extends Application {
                     tt.play();
                     root.getChildren().add(z);
                 }
+                
+                if (sun.getClosingEyes()!=null && Math.random()*100 > 75){
+                    z = makeZ(sun.getX(),sun.getY());
+                  
+                    RotateTransition rt = new RotateTransition(Duration.seconds(1), z);
+                    double angle = Math.random()*80;
+                    rt.setFromAngle(angle);
+                    rt.setToAngle(-angle);
+             
+                    rt.setAutoReverse(true);
+                    rt.setCycleCount(Animation.INDEFINITE);
+
+                    TranslateTransition tt = new TranslateTransition(Duration.seconds(3), z);
+                    tt.setByY(-WINDOW_HEIGHT/2 - 40);
+                    tt.setInterpolator(Interpolator.LINEAR);
+                    rt.play();
+                    tt.play();
+                    root.getChildren().add(z);
+                }
+                
+                if (Math.random()*100 > 50){                 
+                    int division = (int) (Math.random()*4);
+                    double x, y;
+                    x = Math.random()*(WINDOW_WIDTH-100) + 50;
+                    y = Math.random()*(WINDOW_HEIGHT-100) + 50;
+                    switch (division){
+                            case 0:
+                                x = Zuma.WINDOW_WIDTH / 8 - Zuma.WINDOW_WIDTH / 16 -5;
+                                break;
+                            case 1:
+                                y = Zuma.WINDOW_HEIGHT * (1 - 1.0 / 8) + Zuma.WINDOW_HEIGHT / 16 + 5;
+                                break;
+                            case 2:
+                                x = Zuma.WINDOW_WIDTH * (1 - 1.0 / 8) + Zuma.WINDOW_WIDTH  / 16 + 5;
+                                break;
+                            case 3:
+                                y = Zuma.WINDOW_HEIGHT / 8 - Zuma.WINDOW_HEIGHT / 16 - 5;
+                                x = Math.random()*(WINDOW_WIDTH-100 - Zuma.WINDOW_WIDTH / 8) + 50 + Zuma.WINDOW_WIDTH / 8 + 5;
+                                break;
+                    }
+                                
+
+                    Circle coin = new Circle(x,y,20);
+                    coin.setFill(Color.YELLOW);
+                    TranslateTransition tt = new TranslateTransition(Duration.seconds(1),coin);
+                    tt.setByY(1);
+                    tt.setAutoReverse(true);
+                    tt.setCycleCount((int) (Math.random()*3) + 3);
+                    tt.play();
+                    tt.setOnFinished(e->{
+                        root.getChildren().remove(coin);   
+                        coins.remove(coin);
+                    });
+                    coins.add(coin);
+                
+                    root.getChildren().add(coin);
+                    
+                }
             }
-            
-            
+               
         }
       
-        text.setText("Time: " + sec);
-        text.setFill(Color.WHITE);
-        text.setX(WINDOW_WIDTH/2);
-        text.setY(20);
-        root.getChildren().add(text);
+        time.setText("Time: " + sec);
+        
+        for (int j = 0; j < shots.size(); j++){
+            for (int i=0; i < coins.size();){
+                 if (coins.get(i).getBoundsInParent().intersects(shots.get(j).getBoundsInParent())){
+                     root.getChildren().remove(coins.get(i));
+                     coins.remove(i);
+                     points += 3;
+                     score.setText("Score: " + points);
+                 }
+                 else{
+                     i++;
+                 }
+            }
+           
+        }
         
         if (!balls.isEmpty() && balls.get(0).getBoundsInParent().intersects(moon.getBoundsInParent())) {
             //root.getChildren().remove(balls.get(0));
@@ -160,11 +244,13 @@ public class Zuma extends Application {
             }
             scene.setOnMouseClicked(null);
             end = true;
+            moon.openEyes();
         }
-        if (balls.get(balls.size() - 1).getTranslateY() >= Ball.getRadius() * 2) {
+        if (balls.size() != 0 && balls.get(balls.size() - 1).getTranslateY() >= Ball.getRadius() * 2) {
             //max 100 balls
             if (balls_cnt<100){
                 Ball ball = new Ball();
+                ball.setShield();
                 balls.add(ball);
                 root.getChildren().add(ball);
                 balls_cnt++;
@@ -190,6 +276,7 @@ public class Zuma extends Application {
             }
         }
         
+        sun.update();
         //ako su sve kugle unistene ne moze da puca vise
         if (balls.size()==0 && balls_cnt == 100){
             end = true;
@@ -197,19 +284,12 @@ public class Zuma extends Application {
             //ne treba 
             scene.setOnMouseClicked(null);
         }
+        background.addStar(balls.get(0));
+        
     }
 
     //logika za unistavanje pokretnih kugli - NE MENJATI!
     public void crashLogic(Shot shot, int j) {
-        
-        Color color = shot.getColor();
-        Stop []stops = {
-            new Stop(0,Color.WHITE),
-            new Stop(1,color)
-        };
-        RadialGradient rg = new RadialGradient(0, 0, 0.5, 0.5, 0.5, true, CycleMethod.NO_CYCLE, stops);
-        
-        shot.getBody().setFill(rg);
         
         Ball hitBall = balls.get(j);
         Ball prevBall = (j - 1 >= 0) ? balls.get(j - 1) : null;
@@ -226,19 +306,64 @@ public class Zuma extends Application {
             root.getChildren().remove(shot);
             int sameColorCnt = 0, k;
             //next
-            for (k = j + 1; k < balls.size() && balls.get(k).getColor().equals(shot.getColor()); sameColorCnt++) {
-                root.getChildren().remove(balls.get(k));
-                balls.remove(k);
+            for (k = j + 1; k < balls.size() && balls.get(k).getColor().equals(shot.getColor());k++) {
+                // counting
+            }
+            int destroyed = 0;
+            int totalCurrScore = 1;
+            if (shot.getColor()==Color.YELLOW){
+                totalCurrScore = 2;
+            }
+            for (int m = k - 1; m >= j + 1 ; m--){
+                if (!balls.get(m).checkShield()){
+                    root.getChildren().remove(balls.get(m));
+                    
+                    int currScore = 1;  
+                    if (balls.get(m).getColor()==Color.YELLOW){
+                        currScore = 2;
+                    }
+                    if (balls.get(m).getShielded()){
+                        currScore *= 2 ;
+                    }
+                    totalCurrScore += currScore;
+                    
+                    balls.remove(m);   
+                    destroyed++;          
+                }
+                else{
+                    balls.get(m).reverse(destroyed);
+                }
+                
             }
             //previous
-            for (k = j; k >= 0 && balls.get(k).getColor().equals(shot.getColor()); k--, sameColorCnt++) {
-                root.getChildren().remove(balls.get(k));
-                balls.remove(k);
+            for (k = j; k >= 0 && balls.get(k).getColor().equals(shot.getColor()); k--) {
+                if (!balls.get(k).checkShield()){
+                    root.getChildren().remove(balls.get(k));
+                    
+                    int currScore = 1;  
+                    if (balls.get(k).getColor()==Color.YELLOW){
+                        currScore = 2;
+                    }
+                    if (balls.get(k).getShielded()){
+                        currScore *=2 ;
+                    }
+                    totalCurrScore += currScore;
+                    
+                    balls.remove(k);
+                    destroyed++;
+                }
+                else{
+                    balls.get(k).reverse(destroyed);
+                }
             }
             //reverse
             for (int m = k; m >= 0; m--) {
-                balls.get(m).reverse(sameColorCnt);
+                balls.get(m).reverse(destroyed);
             }
+            
+            points += totalCurrScore;
+            score.setText("Score: " + points);
+
         } else {
             if (nextBall != null) {
                 shot.becomeMoving(nextBall);
@@ -261,6 +386,14 @@ public class Zuma extends Application {
             return;
         shots.add(shot);
         root.getChildren().add(shot);
+        Color color = shot.getColor();
+        Stop []stops = {
+            new Stop(0,Color.WHITE),
+            new Stop(1,color)
+        };
+        RadialGradient rg = new RadialGradient(0, 0, 0.5, 0.5, 0.5, true, CycleMethod.NO_CYCLE, stops);
+        
+        shot.getBody().setFill(rg);
     }
 
     /**

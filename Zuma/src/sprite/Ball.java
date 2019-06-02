@@ -5,11 +5,14 @@
  */
 package sprite;
 
+import javafx.animation.Animation;
+import javafx.animation.ScaleTransition;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.CycleMethod;
 import javafx.scene.paint.RadialGradient;
 import javafx.scene.paint.Stop;
 import javafx.scene.shape.Circle;
+import javafx.util.Duration;
 import zuma.Zuma;
 
 /**
@@ -34,7 +37,12 @@ public class Ball extends Sprite {
     protected Circle body;
     protected int division = BORDER_DIVISION;
     protected int cnt = BORDER_DIVISION - 1;
+    
+    private boolean shielded = false;
 
+    private Circle shield = null;
+    private ScaleTransition shieldScale;
+    
     public Ball() {
         body = new Circle(BALL_RADIUS);
         color = colors[(int) (Math.random() * colors.length)];
@@ -46,8 +54,8 @@ public class Ball extends Sprite {
         
         body.setFill(rg);
         body.setStroke(Color.WHITE);
-        getChildren().addAll(body);
         
+        getChildren().addAll(body);
         velocity = BALL_VELOCITY;
         setTranslateX(1 / 8.0 * Zuma.WINDOW_WIDTH);
         setTranslateY(0);
@@ -149,5 +157,44 @@ public class Ball extends Sprite {
     }
     
     
+    public void setShield(){
+        if (Math.random()*100>70){
+            shielded = true;
+            shield = new Circle(BALL_RADIUS+3); 
+            Color c= new Color(color.getRed(),color.getGreen(),color.getBlue(),1);
+            shield.setFill(c);
+            getChildren().remove(body);
+            getChildren().add(shield);
+            getChildren().add(body);
+            shieldScale= new ScaleTransition(Duration.seconds(1),shield);
+            shieldScale.setFromX(1);
+            shieldScale.setToX(1.1);
+            shieldScale.setFromY(1);
+            shieldScale.setToY(1.1);
+            shieldScale.setAutoReverse(true);
+            shieldScale.setCycleCount(Animation.INDEFINITE);
+            shieldScale.play();
+        }
+    }
+    
+    
+    public boolean checkShield(){
+        if (shield!=null){
+            getChildren().remove(shield);
+            shieldScale.stop();
+            shield = null;
+            return true;
+        }
+        return false;
+    }
 
+    public boolean getShielded(){
+        return shielded;
+    }
+
+    public int getCnt() {
+        return cnt;
+    }
+    
+    
 }

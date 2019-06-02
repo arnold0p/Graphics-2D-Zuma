@@ -6,7 +6,9 @@
 package sprite;
 
 import javafx.animation.Animation;
+import javafx.animation.AnimationTimer;
 import javafx.animation.ScaleTransition;
+import javafx.scene.Group;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.CycleMethod;
 import javafx.scene.paint.LinearGradient;
@@ -29,6 +31,14 @@ public class Moon extends Sprite {
     private double x;
     private double y;
 
+    private Circle leftPupil;
+    private Circle rightPupil;
+    private Arc leftEye;
+    private Arc rightEye;
+    
+    private long t = 0;
+    private long cnt = 0;
+    
     public Moon(double x, double y) {
         this.x = x;
         this.y = y;
@@ -42,8 +52,8 @@ public class Moon extends Sprite {
         body.setFill(lg);
         
         
-        Arc leftEye = new Arc(-MOON_RADIUS/3.3,-MOON_RADIUS/2 -5,10,25,180,180);
-        Arc rightEye = new Arc(MOON_RADIUS/3.3,-MOON_RADIUS/2-5,10,25,180,180);
+        leftEye = new Arc(-MOON_RADIUS/3.3,-MOON_RADIUS/2 -5,10,25,180,180);
+        rightEye = new Arc(MOON_RADIUS/3.3,-MOON_RADIUS/2-5,10,25,180,180);
 
         leftEye.setStroke(Color.BLACK);
         leftEye.setFill(Color.GRAY);
@@ -54,6 +64,11 @@ public class Moon extends Sprite {
         rightEye.setFill(Color.GRAY);
         rightEye.setType(ArcType.CHORD);
         rightEye.setRotate(180);
+        
+        leftPupil = new Circle(-MOON_RADIUS/3.3 ,-MOON_RADIUS/2 + 15,5);
+        rightPupil = new Circle(MOON_RADIUS/3.3 ,-MOON_RADIUS/2 + 15,5);
+        
+        
         
         Circle mounth = new Circle(0,MOON_RADIUS/2, 5);
         mounth.setFill(Color.BLACK);
@@ -93,6 +108,35 @@ public class Moon extends Sprite {
         return y;
     }
     
+    
+    public void openEyes(){
+        
+            
+        new AnimationTimer() {
+            @Override
+            public void handle(long now) {
+                if (System.currentTimeMillis()-t>500){
+                    t = System.currentTimeMillis();
+                    if (cnt==4){
+                        this.stop();
+                    }
+                    if (cnt%2==0){
+                        rightEye.setFill(Color.WHITE);
+                        leftEye.setFill(Color.WHITE);
+                        getChildren().addAll(leftPupil,rightPupil);
+                    }
+                    else{
+                        rightEye.setFill(Color.GREY);
+                        leftEye.setFill(Color.GREY);
+                        getChildren().removeAll(leftPupil,rightPupil);
+                    }
+                    cnt++;
+                }
+                      
+            }
+        }.start();
+        
+    }
     
 
 }

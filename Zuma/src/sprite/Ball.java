@@ -7,8 +7,10 @@ package sprite;
 
 import javafx.animation.Animation;
 import javafx.animation.ScaleTransition;
+import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.CycleMethod;
+import javafx.scene.paint.ImagePattern;
 import javafx.scene.paint.RadialGradient;
 import javafx.scene.paint.Stop;
 import javafx.scene.shape.Circle;
@@ -179,11 +181,14 @@ public class Ball extends Sprite {
     
     
     public boolean checkShield(){
-        if (shield!=null){
+        if (shield!=null && shield.getFill() != Color.WHITE){
+            shield.setFill(Color.WHITE); 
+            return true;
+        }
+        if (shield !=null){
             getChildren().remove(shield);
             shieldScale.stop();
             shield = null;
-            return true;
         }
         return false;
     }

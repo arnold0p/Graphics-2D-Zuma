@@ -12,8 +12,10 @@ import javafx.animation.TranslateTransition;
 import javafx.application.Application;
 import static javafx.application.Application.launch;
 import javafx.scene.*;
+import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.CycleMethod;
+import javafx.scene.paint.ImagePattern;
 import javafx.scene.paint.RadialGradient;
 import javafx.scene.paint.Stop;
 import javafx.scene.shape.Circle;
@@ -46,7 +48,7 @@ public class Zuma extends Application {
     private int points = 0;
     private Text score;
     private Background background;
-    private ArrayList<Circle> coins = new ArrayList<>();
+    private ArrayList<Circle> coins = new ArrayList<Circle>();
     private Text coinText;
     
     @Override
@@ -124,81 +126,86 @@ public class Zuma extends Application {
             }
             return;
         }
-        //adding time
         
-        if (t==0){
+        // Adding time.
+        if (System.currentTimeMillis() - t > 1000){
+            sec++;
             t = System.currentTimeMillis();
-        }
-        else {
-            if (System.currentTimeMillis() - t > 1000){
-                sec++;
-                t = System.currentTimeMillis();
-                
-                // make Z
-                if (Math.random()*100 > 75){
-                    z = makeZ(moon.getX(),moon.getY());
-                  
-                    RotateTransition rt = new RotateTransition(Duration.seconds(1), z);
-                    double angle = Math.random()*80;
-                    rt.setFromAngle(angle);
-                    rt.setToAngle(-angle);
-             
-                    rt.setAutoReverse(true);
-                    rt.setCycleCount(Animation.INDEFINITE);
 
-                    TranslateTransition tt = new TranslateTransition(Duration.seconds(3), z);
-                    tt.setByY(-WINDOW_HEIGHT/2 - 40);
-                    tt.setInterpolator(Interpolator.LINEAR);
-                    rt.play();
-                    tt.play();
-                    root.getChildren().add(z);
-                }
-                
-                if (sun.getClosingEyes()!=null && Math.random()*100 > 75){
-                    z = makeZ(sun.getX(),sun.getY());
-                  
-                    RotateTransition rt = new RotateTransition(Duration.seconds(1), z);
-                    double angle = Math.random()*80;
-                    rt.setFromAngle(angle);
-                    rt.setToAngle(-angle);
-             
-                    rt.setAutoReverse(true);
-                    rt.setCycleCount(Animation.INDEFINITE);
+            // make Z
+            if (Math.random()*100 > 75){
+                z = makeZ(moon.getX(),moon.getY());
 
-                    TranslateTransition tt = new TranslateTransition(Duration.seconds(3), z);
-                    tt.setByY(-WINDOW_HEIGHT/2 - 40);
-                    tt.setInterpolator(Interpolator.LINEAR);
-                    rt.play();
-                    tt.play();
-                    root.getChildren().add(z);
+                RotateTransition rt = new RotateTransition(Duration.seconds(1), z);
+                double angle = Math.random()*80;
+                rt.setFromAngle(angle);
+                rt.setToAngle(-angle);
+
+                rt.setAutoReverse(true);
+                rt.setCycleCount(Animation.INDEFINITE);
+
+                TranslateTransition tt = new TranslateTransition(Duration.seconds(3), z);
+                tt.setByY(-WINDOW_HEIGHT/2 - 40);
+                tt.setInterpolator(Interpolator.LINEAR);
+                rt.play();
+                tt.play();
+                root.getChildren().add(z);
+            }
+
+            if (sun.getClosingEyes()!=null && Math.random()*100 > 75){
+                z = makeZ(sun.getX(),sun.getY());
+
+                RotateTransition rt = new RotateTransition(Duration.seconds(1), z);
+                double angle = Math.random()*80;
+                rt.setFromAngle(angle);
+                rt.setToAngle(-angle);
+
+                rt.setAutoReverse(true);
+                rt.setCycleCount(Animation.INDEFINITE);
+
+                TranslateTransition tt = new TranslateTransition(Duration.seconds(3), z);
+                tt.setByY(-WINDOW_HEIGHT/2 - 40);
+                tt.setInterpolator(Interpolator.LINEAR);
+                rt.play();
+                tt.play();
+                root.getChildren().add(z);
+            }
+
+            if (Math.random()*100 > 50){                 
+                int division = (int) (Math.random()*4);
+                double x, y;
+                x = Math.random()*(WINDOW_WIDTH-100) + 50;
+                y = Math.random()*(WINDOW_HEIGHT-100) + 50;
+                switch (division){
+                        case 0:
+                            x = Zuma.WINDOW_WIDTH / 8 - Zuma.WINDOW_WIDTH / 16 -5;
+                            break;
+                        case 1:
+                            y = Zuma.WINDOW_HEIGHT * (1 - 1.0 / 8) + Zuma.WINDOW_HEIGHT / 16 + 5;
+                            break;
+                        case 2:
+                            x = Zuma.WINDOW_WIDTH * (1 - 1.0 / 8) + Zuma.WINDOW_WIDTH  / 16 + 5;
+                            break;
+                        case 3:
+                            y = Zuma.WINDOW_HEIGHT / 8 - Zuma.WINDOW_HEIGHT / 16 - 5;
+                            x = Math.random()*(WINDOW_WIDTH-100 - Zuma.WINDOW_WIDTH / 8) + 50 + Zuma.WINDOW_WIDTH / 8 + 5;
+                            break;
                 }
-                
-                if (Math.random()*100 > 50){                 
-                    int division = (int) (Math.random()*4);
-                    double x, y;
-                    x = Math.random()*(WINDOW_WIDTH-100) + 50;
-                    y = Math.random()*(WINDOW_HEIGHT-100) + 50;
-                    switch (division){
-                            case 0:
-                                x = Zuma.WINDOW_WIDTH / 8 - Zuma.WINDOW_WIDTH / 16 -5;
-                                break;
-                            case 1:
-                                y = Zuma.WINDOW_HEIGHT * (1 - 1.0 / 8) + Zuma.WINDOW_HEIGHT / 16 + 5;
-                                break;
-                            case 2:
-                                x = Zuma.WINDOW_WIDTH * (1 - 1.0 / 8) + Zuma.WINDOW_WIDTH  / 16 + 5;
-                                break;
-                            case 3:
-                                y = Zuma.WINDOW_HEIGHT / 8 - Zuma.WINDOW_HEIGHT / 16 - 5;
-                                x = Math.random()*(WINDOW_WIDTH-100 - Zuma.WINDOW_WIDTH / 8) + 50 + Zuma.WINDOW_WIDTH / 8 + 5;
-                                break;
+
+                Circle [] currCoins = coins.toArray(new Circle[coins.size()]);
+                boolean intersected = false;
+                for (int i = 0; i < currCoins.length; i++){
+                    if (Math.sqrt(Math.pow(y - currCoins[i].getCenterY(), 2) + Math.pow(x - currCoins[i].getCenterX(), 2)) < 40){
+                        intersected = true;
+                        break;
                     }
-                                
-
+                }
+                
+                if (!intersected){
                     Circle coin = new Circle(x,y,20);
-                    coin.setFill(Color.YELLOW);
+                    coin.setFill(new ImagePattern(new Image("coin.png")));
                     TranslateTransition tt = new TranslateTransition(Duration.seconds(1),coin);
-                    tt.setByY(1);
+                    tt.setByY(3);
                     tt.setAutoReverse(true);
                     tt.setCycleCount((int) (Math.random()*3) + 3);
                     tt.play();
@@ -207,13 +214,14 @@ public class Zuma extends Application {
                         coins.remove(coin);
                     });
                     coins.add(coin);
-                
+
                     root.getChildren().add(coin);
-                    
                 }
+
             }
-               
         }
+               
+        
       
         time.setText("Time: " + sec);
         

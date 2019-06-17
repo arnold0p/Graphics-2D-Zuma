@@ -13,6 +13,9 @@ import javafx.event.EventHandler;
 import javafx.scene.Group;
 import javafx.scene.input.*;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.CycleMethod;
+import javafx.scene.paint.RadialGradient;
+import javafx.scene.paint.Stop;
 import javafx.scene.shape.*;
 import javafx.util.Duration;
 
@@ -51,7 +54,14 @@ public class Sun extends Sprite implements EventHandler<MouseEvent> {
         mouthColor = colors[(int) (Math.random() * colors.length)];
         mounthColorBack = colors[(int) (Math.random() * colors.length)];
         
-        mouth.setFill(mouthColor);
+        
+        Stop []stops = {
+            new Stop(0,Color.WHITE),
+            new Stop(1,mouthColor)
+        };
+        RadialGradient rg = new RadialGradient(0, 0, 0.5, 0.5, 0.5, true, CycleMethod.NO_CYCLE, stops);
+        mouth.setFill(rg);
+        mouth.setStroke(Color.WHITE);
         mouth.setTranslateY(SUN_RADIUS / 4);
         
         
@@ -130,7 +140,13 @@ public class Sun extends Sprite implements EventHandler<MouseEvent> {
         mouthColor = mounthColorBack;
         mounthColorBack = colors[(int) (Math.random() * colors.length)];
         
-        mouth.setFill(mouthColor);
+        Stop []stops = {
+            new Stop(0,Color.WHITE),
+            new Stop(1,mouthColor)
+        };
+        RadialGradient rg = new RadialGradient(0, 0, 0.5, 0.5, 0.5, true, CycleMethod.NO_CYCLE, stops);
+        mouth.setFill(rg);
+        mouth.setStroke(Color.WHITE);
         mouthBack.setStroke(mounthColorBack);
     }
 
